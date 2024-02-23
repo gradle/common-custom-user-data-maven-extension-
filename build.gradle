@@ -19,13 +19,12 @@ repositories {
 }
 
 dependencies {
+    compileOnly("com.gradle:develocity-gradle-plugin:3.17")
     testImplementation(platform('org.junit:junit-bom:5.10.2'))
     testImplementation('org.junit.jupiter:junit-jupiter')
     testImplementation("org.mockito:mockito-core:4.11.0")
     testImplementation("org.mockito:mockito-junit-jupiter:4.11.0")
-    testImplementation('com.gradle:gradle-enterprise-gradle-plugin:3.16.2') {
-        because("Verify that reflective proxies and adapters work with actual plugin classes")
-    }
+    testImplementation("com.gradle:develocity-gradle-plugin:3.17")
 }
 
 wrapperUpgrade {
@@ -79,8 +78,8 @@ signing {
     required providers.environmentVariable('CI').isPresent()
 
     useInMemoryPgpKeys(
-        providers.environmentVariable('PGP_SIGNING_KEY').orNull,
-        providers.environmentVariable('PGP_SIGNING_KEY_PASSPHRASE').orNull
+            providers.environmentVariable('PGP_SIGNING_KEY').orNull,
+            providers.environmentVariable('PGP_SIGNING_KEY_PASSPHRASE').orNull
     )
 }
 

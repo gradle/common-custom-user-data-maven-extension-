@@ -1,6 +1,7 @@
-package com.gradle.ccud.proxies.enterprise;
+package com.gradle.ccud.adapters.enterprise;
 
-import com.gradle.ccud.proxies.ProxyFactory;
+import com.gradle.ccud.BaseAdapterTest;
+import com.gradle.ccud.adapters.DevelocityAdapter;
 import com.gradle.enterprise.gradleplugin.GradleEnterpriseExtension;
 import com.gradle.scan.plugin.BuildScanExtension;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,25 +14,25 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class GradleEnterpriseExtensionProxyTest extends BaseProxyTest {
+public class GradleEnterpriseExtensionAdapterTest extends BaseAdapterTest {
 
     private GradleEnterpriseExtension extension;
-    private GradleEnterpriseExtensionProxy proxy;
+    private DevelocityAdapter adapter;
 
     @BeforeEach
     void setup() {
-        extension = mock();
-        proxy = ProxyFactory.createProxy(extension, GradleEnterpriseExtensionProxy.class);
+        extension = createGradleEnterpriseMock();
+        adapter = DevelocityAdapter.create(extension);
     }
 
     @Test
-    @DisplayName("can set and retrieve the server value using proxy")
+    @DisplayName("can set and retrieve the server value using adapter")
     void testServer() {
         //given
         String server = "https://ge-server.com";
 
         // when
-        proxy.setServer(server);
+        adapter.setServer(server);
 
         // then
         verify(extension).setServer(server);
@@ -40,17 +41,17 @@ class GradleEnterpriseExtensionProxyTest extends BaseProxyTest {
         when(extension.getServer()).thenReturn(server);
 
         // then
-        assertEquals(server, proxy.getServer());
+        assertEquals(server, adapter.getServer());
     }
 
     @Test
-    @DisplayName("can set and retrieve the project ID value using proxy")
+    @DisplayName("can set and retrieve the project ID value using adapter")
     void testProjectId() {
         //given
         String projectId = "awesomeProject";
 
         // when
-        proxy.setProjectId(projectId);
+        adapter.setProjectId(projectId);
 
         // then
         verify(extension).setProjectId(projectId);
@@ -59,14 +60,14 @@ class GradleEnterpriseExtensionProxyTest extends BaseProxyTest {
         when(extension.getProjectId()).thenReturn(projectId);
 
         // then
-        assertEquals(projectId, proxy.getProjectId());
+        assertEquals(projectId, adapter.getProjectId());
     }
 
     @Test
-    @DisplayName("can set and retrieve the allowUntrustedServer value using proxy")
+    @DisplayName("can set and retrieve the allowUntrustedServer value using adapter")
     void testAllowUntrustedServer() {
         // when
-        proxy.setAllowUntrustedServer(true);
+        adapter.setAllowUntrustedServer(true);
 
         // then
         verify(extension).setAllowUntrustedServer(true);
@@ -75,17 +76,17 @@ class GradleEnterpriseExtensionProxyTest extends BaseProxyTest {
         when(extension.getAllowUntrustedServer()).thenReturn(true);
 
         // then
-        assertTrue(proxy.getAllowUntrustedServer());
+        assertTrue(adapter.getAllowUntrustedServer());
     }
 
     @Test
-    @DisplayName("can set and retrieve the access key value using proxy")
+    @DisplayName("can set and retrieve the access key value using adapter")
     void testAccessKey() {
         // given
         String accessKey = "key";
 
         // when
-        proxy.setAccessKey(accessKey);
+        adapter.setAccessKey(accessKey);
 
         // then
         verify(extension).setAccessKey(accessKey);
@@ -94,14 +95,14 @@ class GradleEnterpriseExtensionProxyTest extends BaseProxyTest {
         when(extension.getAccessKey()).thenReturn(accessKey);
 
         // then
-        assertEquals(accessKey, proxy.getAccessKey());
+        assertEquals(accessKey, adapter.getAccessKey());
     }
 
     @Test
-    @DisplayName("can retrieve the build cache class using proxy")
+    @DisplayName("can retrieve the build cache class using adapter")
     void testBuildCache() {
         // when
-        proxy.getBuildCache();
+        adapter.getBuildCache();
 
         // then
         verify(extension).getBuildCache();
@@ -115,14 +116,14 @@ class GradleEnterpriseExtensionProxyTest extends BaseProxyTest {
         when(extension.getBuildScan()).thenReturn(buildScanExtension);
 
         // when
-        proxy.buildScan(buildScan -> {
-            buildScan.setAllowUntrustedServer(true);
-            buildScan.setServer("server");
+        adapter.buildScan(buildScan -> {
+            buildScan.setUploadInBackground(true);
+            buildScan.setTermsOfServiceUrl("server");
         });
 
         // then
-        verify(buildScanExtension).setAllowUntrustedServer(true);
-        verify(buildScanExtension).setServer("server");
+        verify(buildScanExtension).setUploadInBackground(true);
+        verify(buildScanExtension).setTermsOfServiceAgree("server");
     }
 
 }

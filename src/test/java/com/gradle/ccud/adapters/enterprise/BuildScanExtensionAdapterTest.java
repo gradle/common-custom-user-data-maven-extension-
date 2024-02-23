@@ -1,6 +1,11 @@
-package com.gradle.ccud.proxies.enterprise;
+package com.gradle.ccud.adapters.enterprise;
 
-import com.gradle.ccud.proxies.ProxyFactory;
+import com.gradle.ccud.BaseAdapterTest;
+import com.gradle.ccud.adapters.BuildScanAdapter;
+import com.gradle.ccud.adapters.DevelocityAdapter;
+import com.gradle.ccud.adapters.shared.BuildResultAdapter;
+import com.gradle.ccud.adapters.shared.PublishedBuildScanAdapter;
+import com.gradle.enterprise.gradleplugin.GradleEnterpriseExtension;
 import com.gradle.scan.plugin.BuildResult;
 import com.gradle.scan.plugin.BuildScanCaptureSettings;
 import com.gradle.scan.plugin.BuildScanDataObfuscation;
@@ -10,6 +15,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -17,55 +24,59 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class BuildScanExtensionProxyTest extends BaseProxyTest {
+public class BuildScanExtensionAdapterTest extends BaseAdapterTest {
 
+    private DevelocityAdapter gradleEnterprise;
     private BuildScanExtension extension;
-    private BuildScanExtensionProxy proxy;
+    private BuildScanAdapter adapter;
 
     @BeforeEach
     void setup() {
-        extension = mock();
-        proxy = ProxyFactory.createProxy(extension, BuildScanExtensionProxy.class);
+        GradleEnterpriseExtension geExtension = createGradleEnterpriseMock();
+        extension = geExtension.getBuildScan();
+
+        gradleEnterprise = DevelocityAdapter.create(geExtension);
+        adapter = gradleEnterprise.getBuildScan();
     }
 
     @Test
-    @DisplayName("can set tags using the extension proxy")
+    @DisplayName("can set tags using the extension adapter")
     void testTag() {
         // when
-        proxy.tag("tag");
+        adapter.tag("tag");
 
         // then
         verify(extension).tag("tag");
     }
 
     @Test
-    @DisplayName("can set custom values using the extension proxy")
+    @DisplayName("can set custom values using the extension adapter")
     void testValue() {
         // when
-        proxy.value("name", "value");
+        adapter.value("name", "value");
 
         // then
         verify(extension).value("name", "value");
     }
 
     @Test
-    @DisplayName("can set custom links using the extension proxy")
+    @DisplayName("can set custom links using the extension adapter")
     void testLink() {
         // when
-        proxy.link("name", "value");
+        adapter.link("name", "value");
 
         // then
         verify(extension).link("name", "value");
     }
 
     @Test
-    @DisplayName("can set and retrieve the terms of service URL using the extension proxy")
+    @DisplayName("can set and retrieve the terms of service URL using the extension adapter")
     void testTermsOfServiceUrl() {
         // given
         String url = "https://terms-of-service.com";
 
         // when
-        proxy.setTermsOfServiceUrl(url);
+        adapter.setTermsOfServiceUrl(url);
 
         // then
         verify(extension).setTermsOfServiceUrl(url);
@@ -74,17 +85,17 @@ class BuildScanExtensionProxyTest extends BaseProxyTest {
         when(extension.getTermsOfServiceUrl()).thenReturn(url);
 
         // then
-        assertEquals(url, proxy.getTermsOfServiceUrl());
+        assertEquals(url, adapter.getTermsOfServiceUrl());
     }
 
     @Test
-    @DisplayName("can set and retrieve the terms of service agreement using the extension proxy")
+    @DisplayName("can set and retrieve the terms of service agreement using the extension adapter")
     void testTermsOfServiceAgree() {
         // given
         String agree = "yes";
 
         // when
-        proxy.setTermsOfServiceAgree(agree);
+        adapter.setTermsOfServiceAgree(agree);
 
         // then
         verify(extension).setTermsOfServiceAgree(agree);
@@ -93,49 +104,14 @@ class BuildScanExtensionProxyTest extends BaseProxyTest {
         when(extension.getTermsOfServiceAgree()).thenReturn(agree);
 
         // then
-        assertEquals(agree, proxy.getTermsOfServiceAgree());
+        assertEquals(agree, adapter.getTermsOfServiceAgree());
     }
 
     @Test
-    @DisplayName("can set and retrieve the server value using proxy")
-    void testServer() {
-        //given
-        String server = "https://ge-server.com";
-
-        // when
-        proxy.setServer(server);
-
-        // then
-        verify(extension).setServer(server);
-
-        // when
-        when(extension.getServer()).thenReturn(server);
-
-        // then
-        assertEquals(server, proxy.getServer());
-    }
-
-    @Test
-    @DisplayName("can set and retrieve the allowUntrustedServer value using proxy")
-    void testAllowUntrustedServer() {
-        // when
-        proxy.setAllowUntrustedServer(true);
-
-        // then
-        verify(extension).setAllowUntrustedServer(true);
-
-        // when
-        when(extension.getAllowUntrustedServer()).thenReturn(true);
-
-        // then
-        assertTrue(proxy.getAllowUntrustedServer());
-    }
-
-    @Test
-    @DisplayName("can set and retrieve the uploadInBackground value using proxy")
+    @DisplayName("can set and retrieve the uploadInBackground value using adapter")
     void testUploadInBackground() {
         // when
-        proxy.setUploadInBackground(true);
+        adapter.setUploadInBackground(true);
 
         // then
         verify(extension).setUploadInBackground(true);
@@ -144,17 +120,17 @@ class BuildScanExtensionProxyTest extends BaseProxyTest {
         when(extension.isUploadInBackground()).thenReturn(true);
 
         // then
-        assertTrue(proxy.isUploadInBackground());
+        assertTrue(adapter.isUploadInBackground());
     }
 
     @Test
-    @DisplayName("can configure the build scan publication using proxy")
+    @DisplayName("can configure the build scan publication using adapter")
     void testPublishing() {
         // when
-        proxy.publishAlways();
-        proxy.publishAlwaysIf(true);
-        proxy.publishOnFailure();
-        proxy.publishOnFailureIf(false);
+        adapter.publishAlways();
+        adapter.publishAlwaysIf(true);
+        adapter.publishOnFailure();
+        adapter.publishOnFailureIf(false);
 
         // then
         verify(extension).publishAlways();
@@ -170,35 +146,34 @@ class BuildScanExtensionProxyTest extends BaseProxyTest {
         doExecuteActionWith(extension).when(extension).background(any());
 
         // when
-        proxy.background(buildScan -> {
-            buildScan.setAllowUntrustedServer(true);
-            buildScan.setServer("server");
+        adapter.background(buildScan -> {
+            buildScan.setUploadInBackground(true);
+            buildScan.setTermsOfServiceUrl("server");
         });
 
         // then
-        verify(extension).setAllowUntrustedServer(true);
-        verify(extension).setServer("server");
+        verify(extension).setUploadInBackground(true);
+        verify(extension).setTermsOfServiceUrl("server");
     }
 
     @Test
-    @DisplayName("can run the build finished action using the proxy")
+    @DisplayName("can run the build finished action using the adapter")
     void testBuildFinishedAction() {
         // given
         Throwable failure = new RuntimeException("Boom!");
         BuildResult buildResult = mock();
         when(buildResult.getFailure()).thenReturn(failure);
-        doExecuteActionWith(buildResult).when(extension).buildFinished(any());
 
         // when
-        ArgCapturingAction<BuildResultProxy> capturer = new ArgCapturingAction<>();
-        proxy.buildFinished(capturer);
+        ArgCapturingAction<BuildResultAdapter> capturer = new ArgCapturingAction<>();
+        adapter.buildFinished(capturer);
 
         // then
-        assertEquals(failure, capturer.getValue().getFailure());
+        assertEquals(Collections.singleton(failure), capturer.getValue().getFailures());
     }
 
     @Test
-    @DisplayName("can run the build scan published action using the proxy")
+    @DisplayName("can run the build scan published action using the adapter")
     void testBuildScanPublishedAction() {
         // given
         PublishedBuildScan scan = mock();
@@ -206,8 +181,8 @@ class BuildScanExtensionProxyTest extends BaseProxyTest {
         doExecuteActionWith(scan).when(extension).buildScanPublished(any());
 
         // when
-        ArgCapturingAction<PublishedBuildScanProxy> capturer = new ArgCapturingAction<>();
-        proxy.buildScanPublished(capturer);
+        ArgCapturingAction<PublishedBuildScanAdapter> capturer = new ArgCapturingAction<>();
+        adapter.buildScanPublished(capturer);
 
         // then
         assertEquals("scanId", capturer.getValue().getBuildScanId());
@@ -221,7 +196,7 @@ class BuildScanExtensionProxyTest extends BaseProxyTest {
         when(extension.getObfuscation()).thenReturn(obfuscation);
 
         // when
-        proxy.obfuscation(o -> {
+        adapter.obfuscation(o -> {
             o.hostname(it -> "<obfuscated>");
             o.username(it -> "<obfuscated>");
         });
@@ -239,7 +214,7 @@ class BuildScanExtensionProxyTest extends BaseProxyTest {
         when(extension.getCapture()).thenReturn(capture);
 
         // when
-        proxy.capture(c -> {
+        adapter.capture(c -> {
             c.setBuildLogging(true);
             c.setTestLogging(false);
         });
@@ -248,5 +223,4 @@ class BuildScanExtensionProxyTest extends BaseProxyTest {
         verify(capture).setBuildLogging(true);
         verify(capture).setTestLogging(false);
     }
-
 }

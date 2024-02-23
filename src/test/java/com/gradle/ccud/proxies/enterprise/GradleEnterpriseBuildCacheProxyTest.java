@@ -1,5 +1,6 @@
 package com.gradle.ccud.proxies.enterprise;
 
+import com.gradle.ccud.BaseAdapterTest;
 import com.gradle.ccud.proxies.ProxyFactory;
 import com.gradle.enterprise.gradleplugin.GradleEnterpriseBuildCache;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,7 +13,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class GradleEnterpriseBuildCacheProxyTest extends BaseProxyTest {
+public class GradleEnterpriseBuildCacheProxyTest extends BaseAdapterTest {
 
     private GradleEnterpriseBuildCache cache;
     private GradleEnterpriseBuildCacheProxy proxy;
